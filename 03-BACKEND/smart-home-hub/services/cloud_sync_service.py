@@ -7,7 +7,6 @@ Nhiệm vụ: relay state lên cloud, nhận command từ cloud, đồng bộ ru
 import json
 import logging
 import os
-import threading
 from datetime import datetime, timezone
 
 import paho.mqtt.client as mqtt
@@ -16,8 +15,7 @@ logger = logging.getLogger("cloud_sync")
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
-_FLUSH_INTERVAL = 10   # giây — batch state → cloud
-_ACK_TIMEOUT    = 10   # giây — sau đó đánh dấu command failed
+_ACK_TIMEOUT = 10   # giây — sau đó đánh dấu command failed
 
 
 class CloudSyncService:
@@ -30,12 +28,7 @@ class CloudSyncService:
         self._hub_id       = None
         self._enabled      = False
 
-        # Pending state buffer: {location_id: {sensor_type: {value, unit, ts}}}
-        self._pending: dict = {}
-        self._pending_lock  = threading.Lock()
-
-        # Flush timer
-        self._flush_timer: threading.Timer | None = None
+        pass  # no batching — all updates published immediately
 
     # ── App Init ──────────────────────────────────────────────────────────────
 
@@ -54,7 +47,6 @@ class CloudSyncService:
         state_store.add_change_listener(self._on_state_change)
 
         self._setup_client(cfg)
-        self._schedule_flush()
 
     def _setup_client(self, cfg):
         broker   = cfg.get("CLOUD_MQTT_BROKER", "")
@@ -219,20 +211,17 @@ class CloudSyncService:
             return
 
         if data_type == "sensor":
+            # Sensor: push ngay — ESP32 vốn chỉ gửi mỗi 10s, không cần batch thêm
             sensor_data = self._state_store.get_sensor(location_id, key)
             unit = sensor_data["unit"] if sensor_data else ""
-            with self._pending_lock:
-                if location_id not in self._pending:
-                    self._pending[location_id] = {}
-                self._pending[location_id][key] = {
-                    "value":     value,
-                    "unit":      unit,
-                    "timestamp": _utcnow(),
-                }
+            self._publish(
+                f"cloud/{self._hub_id}/{location_id}/sensors/{key}",
+                {"value": value, "unit": unit, "timestamp": _utcnow()},
+            )
 
         elif data_type == "actuator":
+            # Actuator: push NGAY LẬP TỨC — FE cần thấy thay đổi liền
             if key == "curtain":
-                # value là bool; lấy position thật từ state_store
                 act = self._state_store.get_actuator(location_id, "curtain")
                 position = 0.0
                 if act:
@@ -240,50 +229,16 @@ class CloudSyncService:
                         position = float(act.get("value", "0") or "0")
                     except (ValueError, TypeError):
                         position = 0.0
-                with self._pending_lock:
-                    if location_id not in self._pending:
-                        self._pending[location_id] = {}
-                    self._pending[location_id]["curtain"] = {
-                        "value":     position,
-                        "unit":      "%",
-                        "timestamp": _utcnow(),
-                    }
+                self._publish(
+                    f"cloud/{self._hub_id}/{location_id}/sensors/curtain",
+                    {"value": position, "unit": "%", "timestamp": _utcnow()},
+                )
             elif key in self._ACTUATOR_TOPIC:
                 topic_key, unit = self._ACTUATOR_TOPIC[key]
-                with self._pending_lock:
-                    if location_id not in self._pending:
-                        self._pending[location_id] = {}
-                    self._pending[location_id][topic_key] = {
-                        "value":     1.0 if value else 0.0,
-                        "unit":      unit,
-                        "timestamp": _utcnow(),
-                    }
-
-    def _schedule_flush(self):
-        self._flush_timer = threading.Timer(_FLUSH_INTERVAL, self._flush_pending)
-        self._flush_timer.daemon = True
-        self._flush_timer.start()
-
-    def _flush_pending(self):
-        """Publish batched state updates lên cloud, mỗi sensor 1 topic."""
-        try:
-            with self._pending_lock:
-                snapshot = self._pending
-                self._pending = {}
-
-            for location_id, sensors in snapshot.items():
-                for sensor_type, data in sensors.items():
-                    topic = f"cloud/{self._hub_id}/{location_id}/sensors/{sensor_type}"
-                    self._publish(topic, data)
-
-            if snapshot:
-                total = sum(len(s) for s in snapshot.values())
-                logger.debug(f"☁️  Flushed {total} sensor(s) to cloud")
-
-        except Exception as e:
-            logger.error(f"☁️  Flush error: {e}")
-        finally:
-            self._schedule_flush()  # luôn lên lịch lại
+                self._publish(
+                    f"cloud/{self._hub_id}/{location_id}/sensors/{topic_key}",
+                    {"value": 1.0 if value else 0.0, "unit": unit, "timestamp": _utcnow()},
+                )
 
     # ── Config Publish ────────────────────────────────────────────────────────
 
@@ -322,8 +277,6 @@ class CloudSyncService:
     # ── Stop ──────────────────────────────────────────────────────────────────
 
     def stop(self):
-        if self._flush_timer:
-            self._flush_timer.cancel()
         if self._client:
             self._publish(f"cloud/{self._hub_id}/status", "offline", retain=True)
             self._client.loop_stop()
