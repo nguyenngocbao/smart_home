@@ -1,0 +1,6 @@
+{
+  "name": "Eco-Smart Oasis",
+  "description": "Smart Home IoT Dashboard for the Eco-Smart Oasis project (Team: Le Duc Ngoc & Tran Kim Phuong). Monitor and control Plant Watering, Smart Blinds, Remote Lighting, and Auto Skylight.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

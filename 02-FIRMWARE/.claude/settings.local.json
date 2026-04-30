@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/nngocbao/**)",
+      "Read(//private/etc/**)",
+      "Read(//Users/nngocbao/Library/LaunchAgents/**)",
+      "Bash(mosquitto_passwd -c /opt/homebrew/etc/mosquitto/pwfile smarthome)",
+      "Bash(mosquitto_passwd -b -c /opt/homebrew/etc/mosquitto/pwfile smarthome mqtt_password)",
+      "Bash(kill 1281)",
+      "Bash(npx tsc *)"
+    ]
+  }
+}

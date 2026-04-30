@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings — Smart Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        body { background: #f0f2f5; font-family: Arial, sans-serif; margin: 0; }
+        .page-content { padding: 20px; margin-top: 80px; max-width: 900px; margin-left: auto; margin-right: auto; }
+        h2.section-heading { font-size: 22px; color: #333; margin: 24px 0 12px; }
+        .info-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #666; font-weight: bold; }
+        .info-value { color: #333; }
+        .status-ok { background: #e8f5e9; color: #2e7d32; padding: 3px 12px; border-radius: 12px; font-weight: bold; font-size: 13px; }
+        .status-bad { background: #ffebee; color: #c62828; padding: 3px 12px; border-radius: 12px; font-weight: bold; font-size: 13px; }
+        .status-degraded { background: #fff3e0; color: #e65100; padding: 3px 12px; border-radius: 12px; font-weight: bold; font-size: 13px; }
+        .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-top: 4px; }
+        .metric-box { background: #f9f9f9; border-radius: 8px; padding: 14px; text-align: center; }
+        .metric-value { font-size: 26px; font-weight: bold; color: #1976d2; }
+        .metric-label { font-size: 12px; color: #888; margin-top: 4px; }
+        .dashboard-header nav a.active { color: #fff; background: rgba(255,255,255,0.3); border-radius: 6px; padding: 4px 10px; }
+        .refresh-btn { background: #1976d2; color: white; border: none; border-radius: 8px; padding: 8px 18px; font-size: 14px; cursor: pointer; float: right; }
+        .refresh-btn:hover { background: #1565c0; }
+    </style>
+</head>
+<body>
+    <div id="connection-status" class="connected">🟢 Connected</div>
+    <div id="last-updated-container">
+        <span>Last updated: </span><span id="last-updated">--:--:--</span>
+    </div>
+
+    <header class="dashboard-header">
+        <h1>🏠 Smart Home Dashboard</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/devices">Devices</a>
+            <a href="/automation">Automation</a>
+            <a href="/settings" class="active">Settings</a>
+        </nav>
+    </header>
+
+    <div class="page-content">
+
+        <h2 class="section-heading">
+            🩺 System Status
+            <button class="refresh-btn" onclick="loadAll()">↺ Refresh</button>
+        </h2>
+        <div class="info-card">
+            <div class="info-row">
+                <span class="info-label">Overall Status</span>
+                <span id="overall-status">--</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">MQTT Broker</span>
+                <span id="mqtt-status">--</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">State Store</span>
+                <span id="state-store-status">--</span>
+            </div>
+        </div>
+
+        <h2 class="section-heading">📊 Metrics</h2>
+        <div class="info-card">
+            <div class="metric-grid">
+                <div class="metric-box">
+                    <div class="metric-value" id="m-locations">--</div>
+                    <div class="metric-label">Locations</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value" id="m-sensors">--</div>
+                    <div class="metric-label">Sensors</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value" id="m-actuators">--</div>
+                    <div class="metric-label">Actuators</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value" id="m-readtime">--</div>
+                    <div class="metric-label">Avg Read (ms)</div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-heading">⚙️ Configuration</h2>
+        <div class="info-card">
+            <div class="info-row">
+                <span class="info-label">MQTT Broker Host</span>
+                <span class="info-value">localhost</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">MQTT Port</span>
+                <span class="info-value">1883</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Flask Port</span>
+                <span class="info-value">5001</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Polling Interval</span>
+                <span class="info-value">2000 ms</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Time Rules Scheduler</span>
+                <span class="status-ok">✅ Running (every minute)</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script>
+        async function loadHealth() {
+            try {
+                const res = await fetch('/api/health');
+                const data = await res.json();
+                document.getElementById('overall-status').innerHTML =
+                    data.status === 'ok'
+                        ? '<span class="status-ok">✅ OK</span>'
+                        : '<span class="status-degraded">⚠️ Degraded</span>';
+                document.getElementById('mqtt-status').innerHTML = data.mqtt_connected
+                    ? '<span class="status-ok">✅ Connected</span>'
+                    : '<span class="status-bad">❌ Disconnected</span>';
+                document.getElementById('state-store-status').innerHTML = data.state_store_ok
+                    ? '<span class="status-ok">✅ OK</span>'
+                    : '<span class="status-bad">❌ Error</span>';
+            } catch (e) {
+                document.getElementById('overall-status').innerHTML = '<span class="status-bad">❌ Unreachable</span>';
+            }
+        }
+
+        async function loadMetrics() {
+            try {
+                const res = await fetch('/api/metrics');
+                const data = await res.json();
+                const ss = data.state_store;
+                document.getElementById('m-locations').textContent = ss.num_locations;
+                document.getElementById('m-sensors').textContent = ss.num_sensors;
+                document.getElementById('m-actuators').textContent = ss.num_actuators;
+                document.getElementById('m-readtime').textContent = ss.avg_read_time_ms.toFixed(3);
+            } catch (e) {}
+        }
+
+        async function loadAll() {
+            await Promise.all([loadHealth(), loadMetrics()]);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAll();
+            const poller = new DashboardPoller(5000);
+            window.poller = poller;
+            poller.updateUI = function(locations) {
+                loadAll();
+                poller.updateTimestamp();
+                poller.updateConnectionStatus(true);
+            };
+            poller.start();
+        });
+    </script>
+</body>
+</html>

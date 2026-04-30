@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Home Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+    <!-- Connection Status -->
+    <div id="connection-status" class="connected">
+        🟢 Connected
+    </div>
+    
+    <!-- Last Updated -->
+    <div id="last-updated-container">
+        <span>Last updated: </span>
+        <span id="last-updated">--:--:--</span>
+    </div>
+    
+    <!-- Dashboard Header -->
+    <header class="dashboard-header">
+        <h1>🏠 Smart Home Dashboard</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/devices">Devices</a>
+            <a href="/automation">Automation</a>
+            <a href="/settings">Settings</a>
+        </nav>
+    </header>
+    
+    <!-- Dashboard Grid -->
+    <div class="dashboard-grid" id="dashboard-grid">
+        <!-- Location cards will be dynamically populated -->
+        <div class="loading-message">
+            <div class="loading-spinner"></div>
+            <p>Loading dashboard...</p>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script>
+        // Override updateUI to create location cards dynamically
+        if (window.poller) {
+            const originalUpdateUI = window.poller.updateUI.bind(window.poller);
+            
+            window.poller.updateUI = function(locations) {
+                const grid = document.getElementById('dashboard-grid');
+                
+                // Clear loading message on first update
+                if (grid.querySelector('.loading-message')) {
+                    grid.innerHTML = '';
+                }
+                
+                // Create/update location cards
+                for (const [locationId, locationState] of Object.entries(locations)) {
+                    let card = document.querySelector(`[data-location-id="${locationId}"]`);
+                    
+                    if (!card) {
+                        card = createLocationCard(locationId, locationState);
+                        grid.appendChild(card);
+                    }
+                    
+                    // Update sensors and actuators
+                    updateLocationCard(card, locationId, locationState);
+                }
+                
+                // Call original updateUI for timestamp and status updates
+                originalUpdateUI(locations);
+            };
+        }
+        
+        /**
+         * Create location card HTML
+         */
+        function createLocationCard(locationId, locationState) {
+            const card = document.createElement('div');
+            card.className = 'location-card';
+            card.dataset.locationId = locationId;
+            
+            // Get location info from MY_DEVICES
+            const locationName = locationId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            
+            card.innerHTML = `
+                <div class="location-header">
+                    <div class="location-name">${locationName}</div>
+                    <div class="location-floor">Tầng</div>
+                </div>
+                
+                <div class="sensors-section">
+                    <h3>📊 Sensors</h3>
+                    <div class="sensors-grid" id="${locationId}-sensors">
+                        <!-- Sensors will be added here -->
+                    </div>
+                </div>
+                
+                <div class="actuators-section">
+                    <h3>🎛️ Controls</h3>
+                    <div class="actuators-grid" id="${locationId}-actuators">
+                        <!-- Actuators will be added here -->
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        /**
+         * Update location card with sensor and actuator data
+         */
+        function updateLocationCard(card, locationId, locationState) {
+            const sensorsGrid = card.querySelector(`#${locationId}-sensors`);
+            const actuatorsGrid = card.querySelector(`#${locationId}-actuators`);
+            
+            // Update sensors
+            const sensors = locationState.sensors || {};
+            for (const [sensorType, sensorData] of Object.entries(sensors)) {
+                let sensorCard = sensorsGrid.querySelector(`[data-sensor="${sensorType}"]`);
+                
+                if (!sensorCard) {
+                    sensorCard = createSensorCard(locationId, sensorType);
+                    sensorsGrid.appendChild(sensorCard);
+                }
+                
+                // Update sensor value
+                const valueElement = sensorCard.querySelector('.sensor-value');
+                if (valueElement) {
+                    valueElement.textContent = `${sensorData.value} ${sensorData.unit}`;
+                    valueElement.id = `${locationId}-${sensorType}`;
+                    valueElement.dataset.timestamp = sensorData.timestamp;
+                }
+            }
+            
+            // Update actuators
+            const actuators = locationState.actuators || {};
+            for (const [actuatorType, actuatorData] of Object.entries(actuators)) {
+                let button = actuatorsGrid.querySelector(`[data-actuator="${actuatorType}"]`);
+                
+                if (!button) {
+                    button = createActuatorButton(locationId, actuatorType);
+                    actuatorsGrid.appendChild(button);
+                }
+                
+                // Update button state
+                button.id = `${locationId}-${actuatorType}`;
+                button.dataset.state = actuatorData.state;
+                button.dataset.timestamp = actuatorData.timestamp;
+                
+                if (actuatorData.state) {
+                    button.classList.add('active');
+                    button.classList.remove('inactive');
+                    button.innerHTML = '🟢 ON';
+                } else {
+                    button.classList.add('inactive');
+                    button.classList.remove('active');
+                    button.innerHTML = '⚪ OFF';
+                }
+            }
+        }
+        
+        /**
+         * Create sensor card HTML
+         */
+        function createSensorCard(locationId, sensorType) {
+            const card = document.createElement('div');
+            card.className = `sensor-card ${sensorType}`;
+            card.dataset.sensor = sensorType;
+            
+            const label = sensorType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            const icon = getSensorIcon(sensorType);
+            
+            card.innerHTML = `
+                <div class="sensor-label">${icon} ${label}</div>
+                <div class="sensor-value" id="${locationId}-${sensorType}">--</div>
+            `;
+            
+            return card;
+        }
+        
+        /**
+         * Create actuator button HTML
+         */
+        function createActuatorButton(locationId, actuatorType) {
+            const button = document.createElement('button');
+            button.className = 'actuator-button';
+            button.dataset.actuator = actuatorType;
+            button.dataset.locationId = locationId;
+            button.dataset.actuatorControl = 'true';
+            
+            const label = actuatorType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            button.title = label;
+            
+            // Add click handler
+            button.addEventListener('click', () => {
+                toggleActuator(locationId, actuatorType);
+            });
+            
+            return button;
+        }
+        
+        /**
+         * Get sensor icon
+         */
+        function getSensorIcon(sensorType) {
+            const icons = {
+                'temperature': '🌡️',
+                'humidity': '💧',
+                'light': '💡',
+                'soil_moisture': '🌱',
+                'rain': '🌧️',
+                'door': '🚪',
+                'motion': '🚶',
+                'gas': '⚠️',
+                'current': '⚡'
+            };
+            return icons[sensorType] || '📊';
+        }
+    </script>
+</body>
+</html>

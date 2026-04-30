@@ -1,0 +1,18 @@
+{
+  "wateringSchedule": ["06:00", "17:00"],
+  "lightingSchedule": {
+    "enabled": true,
+    "onTime": "18:00",
+    "offTime": "06:00"
+  },
+  "skylightRules": {
+    "enabled": true,
+    "autoOpenTemp": 35,
+    "closeOnRain": true
+  },
+  "blindsAuto": {
+    "enabled": false,
+    "closeThreshold": 80,
+    "openThreshold": 20
+  }
+}

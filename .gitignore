@@ -1,0 +1,66 @@
+# ================================================================
+#  Smart Home IoT — .gitignore
+# ================================================================
+
+# ──── Environment / Secrets ──────────────────────────────────────
+.env
+*.env.local
+*.env.production
+*.env.*.local
+
+# ──── Node.js ────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+build/
+.vite/
+
+# ──── Python ─────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+
+# ──── Runtime files (Hub) ────────────────────────────────────────
+03-BACKEND/smart-home-hub/cloud_rules.json
+03-BACKEND/smart-home-hub/data/
+
+# ──── Arduino / PlatformIO ───────────────────────────────────────
+02-FIRMWARE/**/.arduino15/
+02-FIRMWARE/**/build/
+02-FIRMWARE/**/*.bin
+02-FIRMWARE/**/*.elf
+02-FIRMWARE/**/*.hex
+
+# ──── macOS ──────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# ──── IDE / Editor ───────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ──── Logs ───────────────────────────────────────────────────────
+*.log
+logs/
+
+# ──── Misc ───────────────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+TONG-HOP-DU-AN.docx

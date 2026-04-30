@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devices — Smart Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        body { background: #f0f2f5; font-family: Arial, sans-serif; margin: 0; }
+        .page-content { padding: 20px; margin-top: 80px; max-width: 1200px; margin-left: auto; margin-right: auto; }
+        .chip-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .chip-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #e0e0e0; }
+        .chip-icon { font-size: 28px; }
+        .chip-name { font-size: 20px; font-weight: bold; color: #333; }
+        .chip-id { font-size: 13px; color: #888; background: #f5f5f5; padding: 3px 10px; border-radius: 10px; }
+        .location-section { margin-top: 16px; border-top: 1px solid #f0f0f0; padding-top: 14px; }
+        .location-title { font-size: 16px; font-weight: bold; color: #555; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .floor-badge { font-size: 12px; background: #e3f2fd; color: #1976d2; padding: 2px 8px; border-radius: 8px; }
+        .controls-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+        .device-btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.2s; min-width: 120px; }
+        .device-btn:hover { transform: scale(1.04); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .device-btn.active { background: #4caf50; color: white; }
+        .device-btn.inactive { background: #9e9e9e; color: white; }
+        .curtain-control { display: flex; align-items: center; gap: 10px; background: #f9f9f9; border-radius: 8px; padding: 10px 16px; width: 100%; box-sizing: border-box; }
+        .curtain-label { font-size: 14px; color: #555; font-weight: bold; min-width: 80px; }
+        .curtain-slider { flex: 1; }
+        .curtain-value { font-size: 14px; font-weight: bold; color: #1976d2; min-width: 40px; text-align: right; }
+        .sensors-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+        .sensor-pill { background: #f9f9f9; border-radius: 8px; padding: 8px 14px; font-size: 13px; color: #555; }
+        .sensor-pill span { font-weight: bold; color: #333; }
+        h2.section-heading { font-size: 22px; color: #333; margin-bottom: 16px; }
+        .dashboard-header nav a.active { color: #fff; background: rgba(255,255,255,0.3); border-radius: 6px; padding: 4px 10px; }
+    </style>
+</head>
+<body>
+    <div id="connection-status" class="connected">🟢 Connected</div>
+    <div id="last-updated-container">
+        <span>Last updated: </span><span id="last-updated">--:--:--</span>
+    </div>
+
+    <header class="dashboard-header">
+        <h1>🏠 Smart Home Dashboard</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/devices" class="active">Devices</a>
+            <a href="/automation">Automation</a>
+            <a href="/settings">Settings</a>
+        </nav>
+    </header>
+
+    <div class="page-content">
+        <h2 class="section-heading">🔌 Devices & Controls</h2>
+        <div id="devices-container">
+            <div class="loading-message"><div class="loading-spinner"></div><p>Loading devices...</p></div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script>
+        let devicesConfig = null;
+
+        async function loadDevices() {
+            const res = await fetch('/api/devices');
+            devicesConfig = await res.json();
+            renderDevices();
+        }
+
+        function renderDevices() {
+            const container = document.getElementById('devices-container');
+            container.innerHTML = '';
+            const { locations, devices } = devicesConfig;
+            for (const [deviceId, device] of Object.entries(devices)) {
+                const card = document.createElement('div');
+                card.className = 'chip-card';
+                card.innerHTML = `
+                    <div class="chip-header">
+                        <span class="chip-icon">🖥️</span>
+                        <span class="chip-name">${device.name}</span>
+                        <span class="chip-id">${deviceId}</span>
+                    </div>
+                    ${device.locations.map(locId => renderLocation(locId, locations[locId])).join('')}
+                `;
+                container.appendChild(card);
+            }
+        }
+
+        function renderLocation(locId, loc) {
+            if (!loc) return '';
+            const actuatorHtml = Object.entries(loc.actuators).map(([actuator, desc]) => {
+                if (actuator === 'curtain') {
+                    return `<div class="curtain-control">
+                        <span class="curtain-label">🪟 Rèm</span>
+                        <input type="range" min="0" max="100" value="50" class="curtain-slider"
+                            id="slider-${locId}-curtain"
+                            oninput="document.getElementById('curtain-val-${locId}').textContent = this.value + '%'"
+                            onchange="setCurtain('${locId}', this.value)">
+                        <span class="curtain-value" id="curtain-val-${locId}">50%</span>
+                    </div>`;
+                }
+                const label = actuator.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                return `<button class="device-btn inactive" id="btn-${locId}-${actuator}"
+                            data-location="${locId}" data-actuator="${actuator}"
+                            onclick="toggleBtn(this)">⚪ ${label}</button>`;
+            }).join('');
+
+            const sensorHtml = loc.sensors.map(s => `
+                <div class="sensor-pill">${getSensorIcon(s)} ${s.replace(/_/g,' ')}: <span id="sv-${locId}-${s}">--</span></div>
+            `).join('');
+
+            return `<div class="location-section">
+                <div class="location-title">
+                    📍 ${loc.name} <span class="floor-badge">${loc.floor}</span>
+                </div>
+                <div class="controls-row">${actuatorHtml}</div>
+                <div class="sensors-row">${sensorHtml}</div>
+            </div>`;
+        }
+
+        async function toggleBtn(btn) {
+            const locId = btn.dataset.location;
+            const actuator = btn.dataset.actuator;
+            const isActive = btn.classList.contains('active');
+            btn.disabled = true;
+            await controlActuator(locId, actuator, !isActive);
+            btn.disabled = false;
+        }
+
+        async function setCurtain(locId, position) {
+            await fetch(`/api/control/${locId}/curtain`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({state: parseInt(position) > 0, position: parseInt(position)})
+            });
+        }
+
+        function getSensorIcon(type) {
+            const icons = {temperature:'🌡️',humidity:'💧',light:'💡',soil_moisture:'🌱',
+                rain:'🌧️',door:'🚪',current:'⚡',curtain:'🪟',
+                pump_state:'🚿',light1_state:'💡',light2_state:'💡',skylight:'🌤️'};
+            return icons[type] || '📊';
+        }
+
+        function applyLiveState(locations) {
+            for (const [locId, locState] of Object.entries(locations)) {
+                for (const [sType, sData] of Object.entries(locState.sensors || {})) {
+                    const el = document.getElementById(`sv-${locId}-${sType}`);
+                    if (el) el.textContent = `${sData.value} ${sData.unit || ''}`;
+                }
+                for (const [act, aData] of Object.entries(locState.actuators || {})) {
+                    const btn = document.getElementById(`btn-${locId}-${act}`);
+                    if (btn) {
+                        btn.classList.toggle('active', aData.state);
+                        btn.classList.toggle('inactive', !aData.state);
+                        const label = act.replace(/_/g,' ').replace(/\b\w/g, l => l.toUpperCase());
+                        btn.innerHTML = (aData.state ? '🟢 ' : '⚪ ') + label;
+                    }
+                    if (act === 'curtain') {
+                        const pos = typeof aData.value === 'string' ? parseInt(aData.value) : (aData.state ? 50 : 0);
+                        const slider = document.getElementById(`slider-${locId}-curtain`);
+                        const valEl = document.getElementById(`curtain-val-${locId}`);
+                        if (slider && !isNaN(pos)) slider.value = pos;
+                        if (valEl && !isNaN(pos)) valEl.textContent = pos + '%';
+                    }
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadDevices();
+            const poller = new DashboardPoller(2000);
+            window.poller = poller;
+            const orig = poller.updateUI.bind(poller);
+            poller.updateUI = function(locations) { applyLiveState(locations); orig(locations); };
+            poller.start();
+        });
+    </script>
+</body>
+</html>
