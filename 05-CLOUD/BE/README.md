@@ -1,6 +1,6 @@
 # 05-CLOUD/BE — Cloud Backend
 
-**Nhóm:** Lê Đức Ngọc · Trần Kim Phương | **GVHD:** TS. Nguyễn Huỳnh Duy Khang  
+**Nhóm:** Trần Kim Phương · Lê Đức Ngọc | **GVHD:** TS. Nguyễn Huỳnh Duy Khang  
 **Trạng thái:** ✅ HOÀN THÀNH | **Stack:** Node.js 18+ / Express / MongoDB / MQTT / Socket.io | **Port:** 3000
 
 > Xem `DESIGN.md` để đọc đầy đủ schema MongoDB, thiết kế API, và MQTT flow.

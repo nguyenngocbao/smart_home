@@ -44,7 +44,8 @@
       "Bash(mosquitto -v)",
       "Read(//usr/local/etc/**)",
       "Bash(kill 23382)",
-      "Bash(echo \"PID: $!\")"
+      "Bash(echo \"PID: $!\")",
+      "Bash(grep -rn \"Lê Đức Ngọc.*Trần Kim Phương\\\\|Trần Kim Phương.*Lê Đức Ngọc\" /Users/nngocbao/KimPhuong/smarthome --include=\"*.h\" --include=\"*.cpp\" --include=\"*.ino\" --include=\"*.md\" ! -path \"*/node_modules/*\")"
     ]
   }
 }

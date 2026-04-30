@@ -1,7 +1,7 @@
 # 🏠 Smart Home IoT - Cấu Trúc Dự Án
 
 **Dự án:** Nhà Thành Thị Eco-Smart Oasis  
-**Người quản lý:** Lê Đức Ngọc, Trần Kim Phương  
+**Người quản lý:** Trần Kim Phương, Lê Đức Ngọc  
 **Giảng viên:** TS. Nguyễn Huỳnh Duy Khang  
 **Ngày tạo:** 2026-04-26
 

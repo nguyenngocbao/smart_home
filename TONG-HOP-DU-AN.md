@@ -1,7 +1,7 @@
 # BÁO CÁO TỔNG HỢP DỰ ÁN
 # NHÀ THÀNH THỊ ECO-SMART OASIS
 
-**Nhóm thực hiện:** Lê Đức Ngọc · Trần Kim Phương  
+**Nhóm thực hiện:** Trần Kim Phương · Lê Đức Ngọc  
 **Giảng viên hướng dẫn:** TS. Nguyễn Huỳnh Duy Khang  
 **Địa điểm triển khai:** Quận 9, TP. Thủ Đức  
 

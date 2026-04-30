@@ -7,7 +7,7 @@
 ## 🏠 Dự án là gì?
 Hệ thống Smart Home IoT cho nhà phố đô thị tại Garden Riverside Village, Quận 9, TP. Thủ Đức.
 - **Tên:** Nhà Thành Thị Eco-Smart Oasis
-- **Nhóm:** Lê Đức Ngọc, Trần Kim Phương
+- **Nhóm:** Trần Kim Phương, Lê Đức Ngọc
 - **GVHD:** TS. Nguyễn Huỳnh Duy Khang
 - **Ngân sách:** ~5–6 triệu VND (phiên bản sinh viên tối ưu)
 

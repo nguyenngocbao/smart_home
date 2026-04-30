@@ -1,6 +1,6 @@
 # 05-CLOUD/FE — eco-smart-oasis
 
-**Nhóm:** Lê Đức Ngọc · Trần Kim Phương | **GVHD:** TS. Nguyễn Huỳnh Duy Khang  
+**Nhóm:** Trần Kim Phương · Lê Đức Ngọc | **GVHD:** TS. Nguyễn Huỳnh Duy Khang  
 **Trạng thái:** ✅ HOÀN THÀNH | **Stack:** React 19 / Vite / TypeScript / Tailwind CSS | **Port:** 5173
 
 ---

@@ -1,6 +1,6 @@
 # TỔNG QUAN DỰ ÁN — NHÀ THÀNH THỊ ECO-SMART OASIS
 
-**Nhóm:** Lê Đức Ngọc · Trần Kim Phương  
+**Nhóm:** Trần Kim Phương · Lê Đức Ngọc  
 **GVHD:** TS. Nguyễn Huỳnh Duy Khang  
 **Địa điểm:** Quận 9, TP. Thủ Đức
 

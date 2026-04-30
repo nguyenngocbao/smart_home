@@ -1,6 +1,6 @@
 # 02-FIRMWARE — ESP32 Firmware
 
-**Nhóm:** Lê Đức Ngọc · Trần Kim Phương | **GVHD:** TS. Nguyễn Huỳnh Duy Khang  
+**Nhóm:** Trần Kim Phương · Lê Đức Ngọc | **GVHD:** TS. Nguyễn Huỳnh Duy Khang  
 **Trạng thái:** ✅ HOÀN THÀNH | **Tool:** Arduino IDE 2.x | **Board:** ESP32 Dev Module  
 **Firmware version:** 1.0.0
 

@@ -2,7 +2,7 @@
 
 // ================================================================
 //  ESP32 #2 — SÂN THƯỢNG  (esp2-rooftop)
-//  Nhóm: Lê Đức Ngọc · Trần Kim Phương
+//  Nhóm: Trần Kim Phương · Lê Đức Ngọc
 //  GVHD: TS. Nguyễn Huỳnh Duy Khang
 //
 //  Module 1 : Tưới ban công tự động → Soil GPIO34 + Relay GPIO26

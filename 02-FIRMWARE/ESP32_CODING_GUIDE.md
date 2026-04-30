@@ -1,5 +1,5 @@
 # Hướng dẫn lập trình ESP32 — Smart Home IoT
-**Nhóm:** Lê Đức Ngọc · Trần Kim Phương | **GVHD:** TS. Nguyễn Huỳnh Duy Khang  
+**Nhóm:** Trần Kim Phương · Lê Đức Ngọc | **GVHD:** TS. Nguyễn Huỳnh Duy Khang  
 **Tool:** Arduino IDE 2.x | **Board:** ESP32 Dev Module
 
 ---

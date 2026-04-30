@@ -1,7 +1,7 @@
 # Nhà Thành Thị Eco-Smart Oasis
 
 **Smart Home IoT — Nhà phố, Quận 9, TP. Thủ Đức**  
-**Nhóm:** Lê Đức Ngọc · Trần Kim Phương | **GVHD:** TS. Nguyễn Huỳnh Duy Khang
+**Nhóm:** Trần Kim Phương · Lê Đức Ngọc | **GVHD:** TS. Nguyễn Huỳnh Duy Khang
 
 ---
 

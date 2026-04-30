@@ -2,7 +2,7 @@
 
 // ================================================================
 //  ESP32 #1 — PHÒNG NGỦ  (esp1-bedroom)
-//  Nhóm: Lê Đức Ngọc · Trần Kim Phương
+//  Nhóm: Trần Kim Phương · Lê Đức Ngọc
 //  GVHD: TS. Nguyễn Huỳnh Duy Khang
 //
 //  Module 2 : Rèm cửa thông minh  → LDR GPIO34 + Servo GPIO13

@@ -1,6 +1,6 @@
 # 03-BACKEND — Smart Home Hub
 
-**Nhóm:** Lê Đức Ngọc · Trần Kim Phương | **GVHD:** TS. Nguyễn Huỳnh Duy Khang  
+**Nhóm:** Trần Kim Phương · Lê Đức Ngọc | **GVHD:** TS. Nguyễn Huỳnh Duy Khang  
 **Trạng thái:** ✅ HOÀN THÀNH | **Runtime:** Python 3.11 / Flask 3.0 | **Port:** 5000
 
 > Đây là nguồn sự thật duy nhất của backend Hub. Đọc file này trước khi sửa bất cứ thứ gì.

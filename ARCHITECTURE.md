@@ -1,7 +1,7 @@
 # Kiến Trúc Hệ Thống — Smart Home IoT
 
 **Dự án:** Nhà Thành Thị Eco-Smart Oasis, Quận 9, TP. Thủ Đức
-**Nhóm:** Lê Đức Ngọc · Trần Kim Phương
+**Nhóm:** Trần Kim Phương · Lê Đức Ngọc
 **GVHD:** TS. Nguyễn Huỳnh Duy Khang
 
 ---
