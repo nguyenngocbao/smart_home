@@ -4,7 +4,9 @@ FROM node:18-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install --frozen-lockfile
+# Dùng npm install thay --frozen-lockfile vì @tailwindcss/oxide dùng native binding
+# package-lock.json gen trên macOS sẽ thiếu bản Linux nếu dùng --frozen-lockfile
+RUN npm install
 
 COPY . .
 
