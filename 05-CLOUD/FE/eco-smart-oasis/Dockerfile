@@ -1,14 +1,14 @@
 # Stage 1 — Build
-# Dùng node:18 (Debian/glibc) thay alpine vì @tailwindcss/oxide là Rust native binary
-# cần glibc — alpine dùng musl nên không load được binding
-FROM node:18 AS builder
+# node:18 (Debian/glibc) cho @tailwindcss/oxide native binding
+FROM --platform=linux/amd64 node:20 AS builder
 
 WORKDIR /app
 
 COPY package.json ./
-# npm bug: optional native deps (@tailwindcss/oxide) đôi khi bị skip lần đầu
-# Fix: install 2 lần + rebuild để đảm bảo native binding được download đúng platform
-RUN npm install && npm install && npm rebuild
+# node:20 đáp ứng yêu cầu @tailwindcss/oxide >= 20
+# Sau install chính, install thẳng native binding để tránh npm optional dep bug
+RUN npm install && \
+    npm install @tailwindcss/oxide-linux-x64-gnu --save-optional
 
 COPY . .
 
@@ -21,7 +21,7 @@ ENV VITE_SOCKET_URL=$VITE_SOCKET_URL
 RUN npm run build
 
 # Stage 2 — Serve
-FROM nginx:alpine
+FROM --platform=linux/amd64 nginx:alpine
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf

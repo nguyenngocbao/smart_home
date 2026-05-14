@@ -1,12 +1,10 @@
-FROM python:3.11-slim
+FROM --platform=linux/amd64 python:3.11-slim
 
 WORKDIR /app
 
-# Cài dependencies trước (cache layer)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy source (không copy .env — dùng env vars từ docker-compose)
 COPY app/ ./app/
 COPY services/ ./services/
 COPY simple/ ./simple/
