@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
 
 // PUT /api/rules
 router.put("/", requireAdmin, async (req, res) => {
-  const allowed = ["wateringSchedule", "lightingSchedule", "skylightRules", "blindsAuto"];
+  const allowed = ["wateringSchedule", "wateringSensor", "lightingSchedule", "skylightRules", "blindsAuto"];
   const patch   = {};
   for (const key of allowed) {
     if (req.body[key] !== undefined) patch[key] = req.body[key];

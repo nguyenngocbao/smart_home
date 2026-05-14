@@ -3,7 +3,7 @@ import { useSmartHome } from '../context/SmartHomeContext';
 import { Settings2, Clock, Trash2, Plus, Thermometer, Sun, RefreshCw, CheckCircle2, WifiOff } from 'lucide-react';
 
 const HOURS   = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
-const MINUTES = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
+const MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
 const TimePicker: React.FC<{
   value: string;

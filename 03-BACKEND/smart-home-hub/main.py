@@ -37,13 +37,15 @@ with app.app_context():
     # Setup time-based rules scheduler
     try:
         from apscheduler.schedulers.background import BackgroundScheduler
+        from apscheduler.triggers.cron import CronTrigger
         from simple.rules_simple import check_time_rules
-        
-        scheduler = BackgroundScheduler()
+        import pytz
+
+        tz = pytz.timezone("Asia/Ho_Chi_Minh")   # GMT+7 — khớp với giờ người dùng cài trên FE
+        scheduler = BackgroundScheduler(timezone=tz)
         scheduler.add_job(
             func=lambda: check_time_rules(mqtt_service, state_store),
-            trigger="cron",
-            minute="*",  # Run every minute
+            trigger=CronTrigger(minute="*", timezone=tz),
             id="time_rules_simple"
         )
         scheduler.start()

@@ -18,6 +18,7 @@ Thiết bị thực tế (khớp với firmware):
 
 import logging
 from datetime import datetime
+import pytz
 from simple.device_control import turn_on, turn_off, get_state
 from MY_DEVICES import LOCATIONS
 
@@ -134,7 +135,7 @@ def time_rules(mqtt, state_store, cfg=None):
     if cfg is None:
         cfg = {}
 
-    now     = datetime.now()
+    now     = datetime.now(pytz.timezone("Asia/Ho_Chi_Minh"))
     hour    = now.hour
     minute  = now.minute
     weekday = now.weekday()

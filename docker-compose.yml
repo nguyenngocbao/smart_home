@@ -1,0 +1,62 @@
+services:
+
+  # ─── Cloud Backend — port ${CLOUD_BE_PORT} ──────────────────────────────────
+  cloud-be:
+    build:
+      context: ./05-CLOUD/BE
+    container_name: smarthome-cloud-be
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PORT: ${CLOUD_BE_PORT}
+      NODE_ENV: production
+    ports:
+      - "${CLOUD_BE_PORT}:${CLOUD_BE_PORT}"
+    networks:
+      - smarthome-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:${CLOUD_BE_PORT}/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ─── Cloud Frontend — port ${CLOUD_FE_PORT} ─────────────────────────────────
+  cloud-fe:
+    build:
+      context: ./05-CLOUD/FE/eco-smart-oasis
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_SOCKET_URL: ${VITE_SOCKET_URL}
+    container_name: smarthome-cloud-fe
+    restart: unless-stopped
+    ports:
+      - "${CLOUD_FE_PORT}:80"
+    networks:
+      - smarthome-net
+    depends_on:
+      cloud-be:
+        condition: service_healthy
+
+  # ─── Smart Hub — port ${SMARTHUB_PORT} ──────────────────────────────────────
+  smarthub:
+    build:
+      context: ./03-BACKEND/smart-home-hub
+    container_name: smarthome-hub
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      FLASK_ENV: production
+      FLASK_DEBUG: "False"
+      HOST: 0.0.0.0
+      PORT: ${SMARTHUB_PORT}
+      MQTT_TLS: "true"
+      MQTT_PORT: "8883"
+      CLOUD_ENABLED: "true"
+    ports:
+      - "${SMARTHUB_PORT}:${SMARTHUB_PORT}"
+    networks:
+      - smarthome-net
+
+networks:
+  smarthome-net:
+    driver: bridge

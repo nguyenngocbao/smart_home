@@ -10,6 +10,7 @@ import json
 import logging
 import os
 from datetime import datetime
+import pytz
 
 logger = logging.getLogger("rules")
 
@@ -183,7 +184,7 @@ def check_time_rules(mqtt_service, state_store):
 def _default_time_rules(mqtt_service, state_store):
     from simple.device_control import turn_on, turn_off
     cfg = get_rules()
-    now     = datetime.now()
+    now     = datetime.now(pytz.timezone("Asia/Ho_Chi_Minh"))
     hour    = now.hour
     minute  = now.minute
     weekday = now.weekday()

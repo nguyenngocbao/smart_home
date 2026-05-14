@@ -1,0 +1,10 @@
+.venv
+__pycache__
+*.pyc
+.env
+tests/
+data/
+logs/
+instance/
+cloud_rules.json
+.git

@@ -45,7 +45,11 @@
       "Read(//usr/local/etc/**)",
       "Bash(kill 23382)",
       "Bash(echo \"PID: $!\")",
-      "Bash(grep -rn \"Lê Đức Ngọc.*Trần Kim Phương\\\\|Trần Kim Phương.*Lê Đức Ngọc\" /Users/nngocbao/KimPhuong/smarthome --include=\"*.h\" --include=\"*.cpp\" --include=\"*.ino\" --include=\"*.md\" ! -path \"*/node_modules/*\")"
+      "Bash(grep -rn \"Lê Đức Ngọc.*Trần Kim Phương\\\\|Trần Kim Phương.*Lê Đức Ngọc\" /Users/nngocbao/KimPhuong/smarthome --include=\"*.h\" --include=\"*.cpp\" --include=\"*.ino\" --include=\"*.md\" ! -path \"*/node_modules/*\")",
+      "Bash(python3 -c \"from datetime import datetime; print\\('Local time:', datetime.now\\(\\)\\); import time; print\\('TZ:', time.tzname\\)\")",
+      "Bash(python3 -c \"from datetime import datetime; import pytz; tz=pytz.timezone\\('Asia/Ho_Chi_Minh'\\); print\\('GMT+7 now:', datetime.now\\(tz\\).strftime\\('%H:%M:%S'\\)\\)\")",
+      "Bash(curl -sv http://localhost:5000/api/health)",
+      "Bash(kill 25760)"
     ]
   }
 }
