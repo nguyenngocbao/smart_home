@@ -1,12 +1,14 @@
 # Stage 1 — Build
-FROM node:18-alpine AS builder
+# Dùng node:18 (Debian/glibc) thay alpine vì @tailwindcss/oxide là Rust native binary
+# cần glibc — alpine dùng musl nên không load được binding
+FROM node:18 AS builder
 
 WORKDIR /app
 
-# Chỉ copy package.json, KHÔNG copy package-lock.json
-# vì lockfile gen trên macOS thiếu native binding Linux của @tailwindcss/oxide
 COPY package.json ./
-RUN npm install
+# npm bug: optional native deps (@tailwindcss/oxide) đôi khi bị skip lần đầu
+# Fix: install 2 lần + rebuild để đảm bảo native binding được download đúng platform
+RUN npm install && npm install && npm rebuild
 
 COPY . .
 
