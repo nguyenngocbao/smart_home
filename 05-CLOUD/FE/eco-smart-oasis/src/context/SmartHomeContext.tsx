@@ -48,17 +48,10 @@ const DEFAULT_LIGHT_ACTUATORS = [
   { id: 'light2', label: 'Đèn 2' },
 ];
 
-function deriveLightActuators(stateData: any): { id: string; label: string }[] {
-  const bedroomSensors = stateData?.locations?.bedroom?.sensors ?? {};
-  const lights = Object.keys(bedroomSensors)
-    .filter(k => k.startsWith('light') && k.endsWith('_state'))
-    .sort()
-    .map(k => {
-      const id = k.replace('_state', '');
-      const num = id.replace('light', '');
-      return { id, label: `Đèn ${num}` };
-    });
-  return lights.length > 0 ? lights : DEFAULT_LIGHT_ACTUATORS;
+function deriveLightActuators(_stateData: any): { id: string; label: string }[] {
+  // light1 cố định ở bedroom (esp1, tầng 1)
+  // light2 cố định ở rooftop (esp2, sân thượng)
+  return DEFAULT_LIGHT_ACTUATORS;
 }
 
 // ── Defaults ───────────────────────────────────────────────────────────────────
@@ -93,8 +86,8 @@ const defaultRules: AutomationRules = {
 const DEVICE_MAP: Record<keyof DeviceState, { locationId: string; actuator: string }> = {
   waterPumpOn:    { locationId: 'rooftop', actuator: 'pump' },
   blindsPosition: { locationId: 'bedroom', actuator: 'curtain' },
-  light1On:       { locationId: 'bedroom', actuator: 'light1' },
-  light2On:       { locationId: 'bedroom', actuator: 'light2' },
+  light1On:       { locationId: 'bedroom', actuator: 'light1' },   // đèn tầng 1 — esp1 GPIO26
+  light2On:       { locationId: 'rooftop', actuator: 'light2' },   // đèn sân thượng — esp2 GPIO27
   skylightOpen:   { locationId: 'rooftop', actuator: 'skylight' },
 };
 
@@ -105,7 +98,7 @@ function mapApiState(data: any): { sensors: SensorData; devices: DeviceState } {
 
   return {
     sensors: {
-      temperature:    rooftop.temperature?.value    ?? 0,
+      temperature:    bedroom.temperature?.value    ?? 0,   // DHT22 trên esp1 (bedroom)
       humidity:       0,   // no humidity sensor in current hardware
       soilMoisture:   rooftop.soil_moisture?.value  ?? 0,
       lightIntensity: bedroom.light?.value          ?? 0,
@@ -114,8 +107,8 @@ function mapApiState(data: any): { sensors: SensorData; devices: DeviceState } {
     devices: {
       waterPumpOn:    (rooftop.pump_state?.value    ?? 0) === 1,
       skylightOpen:   (rooftop.skylight?.value      ?? 0) === 1,
-      light1On:       (bedroom.light1_state?.value  ?? 0) === 1,
-      light2On:       (bedroom.light2_state?.value  ?? 0) === 1,
+      light1On:       (bedroom.light1_state?.value  ?? 0) === 1,   // esp1 GPIO26
+      light2On:       (rooftop.light2_state?.value  ?? 0) === 1,   // esp2 GPIO27
       blindsPosition: Math.round(bedroom.curtain?.value ?? 0),
     },
   };
@@ -161,16 +154,16 @@ function applyStateUpdate(
   const d = { ...devices };
 
   if (locationId === 'rooftop') {
-    if (sensorType === 'temperature')   s.temperature    = value;
-    else if (sensorType === 'soil_moisture') s.soilMoisture = value;
-    else if (sensorType === 'rain')     s.isRaining      = value === 1;
-    else if (sensorType === 'pump_state')   d.waterPumpOn    = value === 1;
-    else if (sensorType === 'skylight') d.skylightOpen   = value === 1;
+    if      (sensorType === 'soil_moisture') s.soilMoisture  = value;
+    else if (sensorType === 'rain')          s.isRaining      = value === 1;
+    else if (sensorType === 'pump_state')    d.waterPumpOn    = value === 1;
+    else if (sensorType === 'skylight')      d.skylightOpen   = value === 1;
+    else if (sensorType === 'light2_state')  d.light2On       = value === 1;  // esp2 GPIO27
   } else if (locationId === 'bedroom') {
-    if (sensorType === 'light')         s.lightIntensity  = value;
-    else if (sensorType === 'light1_state') d.light1On    = value === 1;
-    else if (sensorType === 'light2_state') d.light2On    = value === 1;
-    else if (sensorType === 'curtain')  d.blindsPosition  = Math.round(value);
+    if      (sensorType === 'temperature')   s.temperature    = value;          // DHT22 esp1
+    else if (sensorType === 'light')         s.lightIntensity = value;
+    else if (sensorType === 'light1_state')  d.light1On       = value === 1;   // esp1 GPIO26
+    else if (sensorType === 'curtain')       d.blindsPosition = Math.round(value);
   }
 
   return { sensors: s, devices: d };

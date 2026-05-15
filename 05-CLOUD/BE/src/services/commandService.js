@@ -51,7 +51,17 @@ async function sendCommand({ locationId, actuator, state, position = null, userI
         clearTimeout(timeout);
         _pending.delete(commandId);
         resolve({ commandId, status: "publish_error" });
+        return;
       }
+      // Emit state_update ngay khi publish thành công — không chờ Hub ack
+      // Giúp FE cập nhật UI tức thì thay vì đợi round-trip HiveMQ
+      socketService.pushStateUpdate(
+        locationId,
+        actuator,
+        position !== null ? position : (state ? 1 : 0),
+        "",
+        new Date().toISOString()
+      );
     });
   });
 }

@@ -6,6 +6,7 @@
 #include "wifi_mqtt.h"
 #include "config.h"
 #include "module1_tuoi.h"       // để gọi tuoi_handleCmd()
+#include "module3_den.h"        // để gọi den_handleCmd()
 #include "module4_cua_troi.h"   // để gọi cuaTroi_handleCmd()
 
 // ── MQTT client dùng chung toàn project ──────────────────────────
@@ -34,6 +35,7 @@ static void onMQTTMessage(char* topicRaw, byte* payload, unsigned int len) {
 
     // Phân phối lệnh đến đúng module
     tuoi_handleCmd(topic, buf);       // Module 1 — Tưới tự động
+    den_handleCmd(topic, buf);        // Module 3 — Đèn chiếu sáng
     cuaTroi_handleCmd(topic, buf);    // Module 4 — Cửa sổ trời
 }
 

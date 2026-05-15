@@ -25,11 +25,13 @@ Nguyên tắc mapping:
 #
 #  "bedroom"  ←→  esp1-bedroom
 #     Module 2: Rèm cửa thông minh  (LDR GPIO34 + Servo GPIO13)
-#     Module 3: Đèn chiếu sáng      (Relay GPIO26 + GPIO27)
+#     Module 3: Đèn tầng 1          (Relay GPIO26 — light1)
+#     Sensor  : Nhiệt độ phòng      (DHT22 GPIO4)
 #
 #  "rooftop"  ←→  esp2-rooftop
 #     Module 1: Tưới ban công tự động  (Soil GPIO34 + Relay GPIO26)
-#     Module 4: Cửa sổ trời            (DHT22 GPIO4 + Rain GPIO35 + Servo GPIO13)
+#     Module 3: Đèn sân thượng         (Relay GPIO27 — light2)
+#     Module 4: Cửa sổ trời            (Rain GPIO35 + Servo GPIO13)
 #
 # ============================================================
 
@@ -43,24 +45,20 @@ LOCATIONS = {
         "floor": "Tầng 1",
 
         # Firmware publish (smarthome/bedroom/sensors/...)
-        #   light       → độ sáng LDR (%, int 0-100)         [Module 2]
-        #   curtain     → vị trí rèm hiện tại (%, int 0-100) [Module 2]
-        #   light1_state → trạng thái đèn zone 1 ("0"/"1")   [Module 3]
-        #   light2_state → trạng thái đèn zone 2 ("0"/"1")   [Module 3]
-        "sensors": ["light", "curtain", "light1_state", "light2_state"],
+        #   light        → độ sáng LDR (%, int 0-100)         [Module 2]
+        #   curtain      → vị trí rèm hiện tại (%, int 0-100) [Module 2]
+        #   light1_state → trạng thái đèn tầng 1 ("0"/"1")    [Module 3]
+        #   temperature  → nhiệt độ phòng (°C)                 [DHT22 GPIO4]
+        "sensors": ["light", "curtain", "light1_state", "temperature"],
 
         # Firmware subscribe (smarthome/cmd/bedroom/...)
-        #   light1  → {"state": true/false}   — relay đèn zone 1 [Module 3]
-        #   light2  → {"state": true/false}   — relay đèn zone 2 [Module 3]
-        #   curtain → {"position": 0–100}     — servo rèm        [Module 2]
+        #   curtain → {"position": 0–100} — servo rèm [Module 2]
+        #   light1  → {"state": true/false} — relay đèn tầng 1 [Module 3]
         #
         # ⚠️  curtain dùng payload {"position": N}, KHÔNG phải {"state": bool}.
-        #     Chỉ điều khiển qua API /devices/bedroom/curtain với field "position".
-        #     Không dùng turn_on/turn_off cho curtain.
         "actuators": {
-            "light1":  "Đèn zone 1 (Relay GPIO26)",
-            "light2":  "Đèn zone 2 (Relay GPIO27)",
             "curtain": "Rèm cửa (Servo GPIO13) — payload: {position: 0-100}",
+            "light1":  "Đèn tầng 1 (Relay GPIO26)",
         },
     },
 
@@ -72,18 +70,20 @@ LOCATIONS = {
         "floor": "Sân Thượng",
 
         # Firmware publish (smarthome/rooftop/sensors/...)
-        #   soil_moisture → độ ẩm đất (%, int 0-100)            [Module 1]
-        #   pump_state    → trạng thái bơm ("0"/"1")             [Module 1]
-        #   temperature   → nhiệt độ không khí (°C, float)       [Module 4]
-        #   rain          → có mưa không ("0"/"1")               [Module 4]
-        #   skylight      → trạng thái cửa sổ trời ("open"/"closed") [Module 4]
-        "sensors": ["soil_moisture", "pump_state", "temperature", "rain", "skylight"],
+        #   soil_moisture  → độ ẩm đất (%, int 0-100)               [Module 1]
+        #   pump_state     → trạng thái bơm ("0"/"1")                [Module 1]
+        #   light2_state   → trạng thái đèn sân thượng ("0"/"1")     [Module 3]
+        #   rain           → có mưa không ("0"/"1")                  [Module 4]
+        #   skylight       → trạng thái cửa sổ trời ("open"/"closed")[Module 4]
+        "sensors": ["soil_moisture", "pump_state", "light2_state", "rain", "skylight"],
 
         # Firmware subscribe (smarthome/cmd/rooftop/...)
-        #   pump     → {"state": true/false}  — relay bơm nước   [Module 1]
-        #   skylight → {"state": true/false}  — servo cửa sổ trời [Module 4]
+        #   pump     → {"state": true/false} — relay bơm nước        [Module 1]
+        #   light2   → {"state": true/false} — relay đèn sân thượng  [Module 3]
+        #   skylight → {"state": true/false} — servo cửa sổ trời     [Module 4]
         "actuators": {
             "pump":     "Máy bơm tưới (Relay GPIO26)",
+            "light2":   "Đèn sân thượng (Relay GPIO27)",
             "skylight": "Cửa sổ trời (Servo GPIO13)",
         },
     },
@@ -106,13 +106,13 @@ ESP32_DEVICES = {
 
     "esp32-bedroom": {
         "name": "ESP32 Phòng Ngủ",
-        # Module 2 (Rèm) + Module 3 (Đèn)
+        # Module 2 (Rèm) + Module 3 (Đèn tầng 1) + DHT22 (Nhiệt độ)
         "locations": ["bedroom"],
     },
 
     "esp32-rooftop": {
         "name": "ESP32 Sân Thượng",
-        # Module 1 (Tưới) + Module 4 (Cửa trời)
+        # Module 1 (Tưới) + Module 3 (Đèn sân thượng) + Module 4 (Cửa trời)
         "locations": ["rooftop"],
     },
 

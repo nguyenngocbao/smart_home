@@ -85,9 +85,10 @@ def sensor_rules(mqtt, state_store, location_id, sensor_type, value, cfg=None):
             turn_off(mqtt, "rooftop", "pump", state_store)
 
     # ──────────────────────────────────────────────────────────
-    # MODULE 4: NHIỆT ĐỘ → CỬA SỔ TRỜI (rooftop)
+    # MODULE 4: NHIỆT ĐỘ → CỬA SỔ TRỜI
+    # DHT22 đã chuyển sang esp1 (bedroom) → nhận temp từ bedroom
     # ──────────────────────────────────────────────────────────
-    if sensor_type == "temperature" and location_id == "rooftop":
+    if sensor_type == "temperature" and location_id == "bedroom":
         sky = cfg.get("skylightRules", {})
         if not sky.get("enabled", True):
             return
@@ -141,23 +142,24 @@ def time_rules(mqtt, state_store, cfg=None):
     weekday = now.weekday()
 
     # ──────────────────────────────────────────────────────────
-    # MODULE 3: LỊCH ĐÈN PHÒNG NGỦ
+    # MODULE 3: LỊCH ĐÈN
+    #   light1 → bedroom  (esp1, tầng 1, GPIO26)
+    #   light2 → rooftop  (esp2, sân thượng, GPIO27)
     # ──────────────────────────────────────────────────────────
     ls = cfg.get("lightingSchedule", {})
     if ls.get("enabled", True):
         on_h,  on_m  = map(int, ls.get("onTime",  "18:00").split(":"))
         off_h, off_m = map(int, ls.get("offTime", "06:00").split(":"))
 
-        lights = ls.get("lights", ["light1", "light2"])
         if hour == on_h and minute == on_m:
-            logger.info(f"🌆 {ls.get('onTime','18:00')} → Bật đèn: {lights}")
-            for light in lights:
-                turn_on(mqtt, "bedroom", light, state_store)
+            logger.info(f"🌆 {ls.get('onTime','18:00')} → Bật đèn tầng 1 + sân thượng")
+            turn_on(mqtt, "bedroom", "light1", state_store)
+            turn_on(mqtt, "rooftop", "light2", state_store)
 
         if hour == off_h and minute == off_m:
-            logger.info(f"🌅 {ls.get('offTime','06:00')} → Tắt đèn: {lights}")
-            for light in lights:
-                turn_off(mqtt, "bedroom", light, state_store)
+            logger.info(f"🌅 {ls.get('offTime','06:00')} → Tắt đèn tầng 1 + sân thượng")
+            turn_off(mqtt, "bedroom", "light1", state_store)
+            turn_off(mqtt, "rooftop", "light2", state_store)
 
     # ──────────────────────────────────────────────────────────
     # MODULE 1: LỊCH TƯỚI CÂY

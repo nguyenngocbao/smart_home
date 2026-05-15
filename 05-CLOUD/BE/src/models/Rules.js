@@ -17,7 +17,7 @@ const rulesSchema = new mongoose.Schema(
       enabled: { type: Boolean, default: true },
       onTime:  { type: String,  default: "18:00" },
       offTime: { type: String,  default: "06:00" },
-      lights:  { type: [String], default: ["light1", "light2"] },
+      // light1 (bedroom/tầng1) và light2 (rooftop/sân thượng) được hub xử lý cố định
     },
 
     skylightRules: {

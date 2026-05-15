@@ -2,22 +2,21 @@
 #include <Arduino.h>
 
 // ================================================================
-//  MODULE 4 — CỬA SỔ TRỜI CHỐNG NÓNG & MƯA (Skylight Defense)
-//  Sensor  : DHT22       → GPIO 4   (nhiệt độ không khí)
+//  MODULE 4 — CỬA SỔ TRỜI CHỐNG MƯA (Skylight Defense)
+//  DHT22 đã chuyển xuống esp1 — module này chỉ dùng rain sensor
+//
 //  Sensor  : Rain sensor → GPIO 35  (phát hiện mưa, ADC1)
 //  Actuator: Servo MG995 → GPIO 13  (mở/đóng cửa sổ trời)
+//
+//  Logic: mưa → đóng cửa | không mưa → giữ nguyên / mở thủ công
 // ================================================================
 
 void cuaTroi_init();
 
-// Đọc cảm biến
-float cuaTroi_readTemp();    // trả về °C  (-999.0 nếu DHT22 lỗi)
-bool  cuaTroi_readRain();    // true = đang mưa
+bool cuaTroi_readRain();
 
-// Điều khiển servo cửa trời
-void cuaTroi_setOpen(bool open);   // true = mở, false = đóng
+void cuaTroi_setOpen(bool open);
 bool cuaTroi_isOpen();
 
-// MQTT
-void cuaTroi_publish(float temp, bool isRaining);                       // GỬI dữ liệu lên MQTT
-void cuaTroi_handleCmd(const String& topic, const char* payload);       // NHẬN lệnh từ MQTT
+void cuaTroi_publish(bool isRaining);
+void cuaTroi_handleCmd(const String& topic, const char* payload);

@@ -6,9 +6,8 @@
 #include "wifi_mqtt.h"
 #include "config.h"
 #include "module2_rem.h"   // để gọi rem_handleCmd()
-#include "module3_den.h"   // để gọi den_handleCmd()
+#include "module3_den.h"   // để gọi den_handleCmd() — đèn tầng 1
 
-// ── MQTT client dùng chung toàn project ──────────────────────────
 #ifdef MQTT_TLS
 static WiFiClientSecure espClient;
 #else
@@ -17,7 +16,7 @@ static WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
 // ================================================================
-//  MQTT CALLBACK — Nhận lệnh từ Hub, phân phối đến từng module
+//  MQTT CALLBACK
 // ================================================================
 static void onMQTTMessage(char* topicRaw, byte* payload, unsigned int len) {
     char buf[256];
@@ -32,9 +31,8 @@ static void onMQTTMessage(char* topicRaw, byte* payload, unsigned int len) {
     Serial.print("  Payload: "); Serial.println(buf);
     Serial.println("========================================");
 
-    // Phân phối lệnh đến đúng module
     rem_handleCmd(topic, buf);   // Module 2 — Rèm cửa
-    den_handleCmd(topic, buf);   // Module 3 — Đèn chiếu sáng
+    den_handleCmd(topic, buf);   // Module 3 — Đèn tầng 1
 }
 
 // ── WiFi ─────────────────────────────────────────────────────────
@@ -63,7 +61,7 @@ bool mqtt_connect() {
     if (mqttClient.connected()) return true;
 
 #ifdef MQTT_TLS
-    espClient.setInsecure();   // bỏ qua verify cert — đủ dùng cho HiveMQ free tier
+    espClient.setInsecure();
 #endif
 
     mqttClient.setServer(MQTT_BROKER, MQTT_PORT);
@@ -72,12 +70,10 @@ bool mqtt_connect() {
 
     Serial.printf("[MQTT] Dang ket noi toi broker: %s ...\n", MQTT_BROKER);
 
-    // Last Will: Hub biết chip offline nếu mất kết nối đột ngột
     const char* will = "{\"status\":\"offline\",\"device\":\"" DEVICE_NAME "\"}";
     bool ok = mqttClient.connect(MQTT_CLIENT_ID, MQTT_USER, MQTT_PASSWORD,
                                  TOPIC_STATUS, 1, true, will);
     if (ok) {
-        // Subscribe nhận mọi lệnh dành cho bedroom
         mqttClient.subscribe("smarthome/cmd/bedroom/#");
 
         const char* online = "{\"status\":\"online\",\"device\":\"" DEVICE_NAME "\","
@@ -95,7 +91,6 @@ bool mqtt_connect() {
 void mqtt_loop()        { mqttClient.loop(); }
 bool mqtt_isConnected() { return mqttClient.connected(); }
 
-// ── Heartbeat — gửi trạng thái chip định kỳ ─────────────────────
 void mqtt_publishHeartbeat() {
     StaticJsonDocument<128> doc;
     doc["device"] = DEVICE_NAME;
