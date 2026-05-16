@@ -54,18 +54,18 @@
 
 // ──── Calibration — Soil Moisture ────────────────────────────────
 #define SOIL_DRY_ADC     4095
-#define SOIL_WET_ADC      800
+#define SOIL_WET_ADC      1500
 
 // ──── Calibration — Rain Sensor ──────────────────────────────────
-#define RAIN_THRESHOLD    180
+#define RAIN_THRESHOLD    2000
 
 // ──── Ngưỡng tự động — Module 1 ─────────────────────────────────
 #define SOIL_DRY_PCT      30
 #define SOIL_WET_PCT      70
 
 // ──── Góc servo cửa sổ trời ──────────────────────────────────────
-#define SKYLIGHT_OPEN_DEG    90
-#define SKYLIGHT_CLOSED_DEG   0
+#define SKYLIGHT_OPEN_DEG    0
+#define SKYLIGHT_CLOSED_DEG   90
 
 // ──── Timing ─────────────────────────────────────────────────────
 #define SENSOR_READ_MS    5000
